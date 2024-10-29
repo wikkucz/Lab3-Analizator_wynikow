@@ -1,23 +1,30 @@
 import pandas as pd
 import joblib
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
 
-df = pd.read_csv('processed_data.csv')
+# Wczytaj kolumny użyte do nauki
+with open('features_used.txt', 'r') as f:
+    features_used = [line.strip() for line in f]
 
-X = df.drop('score', axis=1)
+# Wczytaj dane
+df = pd.read_csv("processed_data_with_dummies.csv")
+
+# Sprawdź, jakie kolumny są w DataFrame
+print("Dostępne kolumny w df:", df.columns.tolist())
+
+# Oddziel cechy (X) od zmiennej docelowej (y)
+X = df[features_used]  # Użyj kolumn, które zostały zapisane
 y = df['score']
 
-X = pd.get_dummies(X, drop_first=True)
-
+# Wczytaj model
 model = joblib.load('trained_model.joblib')
 
-_, X_test, _, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+# Predykcja
+y_pred = model.predict(X)
 
-y_pred = model.predict(X_test)
+# Ocena modelu
+mse = mean_squared_error(y, y_pred)
+r2 = r2_score(y, y_pred)
 
-mse = mean_squared_error(y_test, y_pred)
-mae = mean_absolute_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
-
-print(f"Model evaluation completed:\nMSE: {mse}\nMAE: {mae}\nR2: {r2}")
+print(f'MSE: {mse}')
+print(f'R²: {r2}')
