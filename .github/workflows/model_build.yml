@@ -1,12 +1,6 @@
-name: Model Build, Evaluation, and Report Generation
+name: Run Report and Model Analysis
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   build:
@@ -26,18 +20,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Data Processing and Model Training
-        run: |
-          python src/data_processing.py
-          python src/model_training.py
-          python src/model_evaluation.py
+      - name: Install Pandoc
+        run: sudo apt-get install -y pandoc
 
-      - name: Generate Report
-        run: |
-          jupyter nbconvert --to pdf report.ipynb --output report.pdf
+      - name: Run data processing
+        run: python src/data_processing.py
 
-      - name: Upload Report
+      - name: Train model
+        run: python src/model_training.py
+
+      - name: Evaluate model
+        run: python src/model_evaluation.py
+
+      - name: Generate PDF Report from Jupyter Notebook
+        run: jupyter nbconvert --to pdf report.ipynb --output report.pdf
+
+      - name: Upload PDF Report
         uses: actions/upload-artifact@v3
         with:
-          name: Report
+          name: report
           path: report.pdf
+
